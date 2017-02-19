@@ -3,7 +3,7 @@ var app = express();
 var _ = require('underscore');
 var validator = require('validator');
 const PORT = process.env.PORT || 5000;
-// var db = require('./db.js');
+var db = require('./models/db.js');
 
 var ideas = [];
 var ideaId = 1;
@@ -30,7 +30,19 @@ app.get('/login', middleware.requireAuthentication, function(req,res) {
 
 // GET /ideas
 app.get('/ideas', function(req, res) {
-  res.status(200).json(ideas);
+  var query = req.query;
+  var where = {};
+
+  if (query.hasOwnProperty('q') && query.q.length > 0) {
+    where.description = { $like: '%' + query.q + '%'}
+  };
+
+  db.idea.findAll({where: where}).then(function(ideas) {
+    res.status(200).json(ideas);
+  }, function(e) {
+    res.status(500).send();
+  })
+
 });
 
 // GET /ideas/:id
@@ -38,15 +50,15 @@ app.get('/ideas/:id', function(req, res) {
   var ideaId = req.params.id;
   var idea;
 
-  idea = ideas.filter(function(idea) {
-    return idea.id === parseInt(ideaId, 10);
-  })[0];
-
-  if (idea) {
-    res.json(idea);
-  } else {
-    res.status(404).send();
-  }
+  db.idea.findById(ideaId).then(function(idea) {
+    if (!!idea) {
+      res.status(200).json(idea);
+    } else {
+      res.status(404).send("Idea not found")
+    }
+  }, function(e) {
+    res.status(500).send(e);
+  });
 });
 
 // POST /ideas
@@ -62,9 +74,11 @@ app.post('/ideas', function(req, res) {
       idea.title = validator.trim(idea.title);
       idea.description = validator.trim(idea.description);
 
-      idea.id = ideaId++;
-      ideas.push(idea);
-      return res.status(200).json(idea);
+      db.idea.create(idea).then(function(idea) {
+        res.status(200).json(idea);
+      }, function(e) {
+        res.status(400).json(e);
+      })
     }
   }
 });
@@ -119,8 +133,8 @@ app.put('/ideas/:id', function(req, res) {
   }
 });
 
-// db.sequelize.sync().then(function() {
+db.sequelize.sync({logging: console.log}).then(function() {
   app.listen(PORT, function() {
     console.log('Server started on port:', PORT);
   });
-// })
+});
