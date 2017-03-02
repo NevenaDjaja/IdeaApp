@@ -1,9 +1,15 @@
 import React from 'react';
 import styles from './Layout.css';
+import Navigation from 'Navigation';
 
-const Layout = () => {
+const Layout = ({
+  ...props
+}) => {
   return (
-    <div>Layout component</div>
+    <div className={styles.layout}>
+      <Navigation/>
+      {props.children}
+    </div>
   );
 }
 

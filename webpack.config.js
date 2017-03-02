@@ -28,7 +28,11 @@ module.exports = {
       './src/mocks'
     ],
     alias: {
-      'Layout': 'Layout/Layout.js'
+      'Layout': 'Layout/Layout.js',
+      'Navigation': 'Navigation/Navigation.js',
+      'Ideas': 'Ideas/Ideas.js',
+      'IdeaForm': 'IdeaForm/IdeaForm.js',
+      'IdeaStream': 'IdeaStream/IdeaStream.js'
     },
     extensions: ['', '.js', '.jsx']
   },
@@ -79,6 +83,14 @@ module.exports = {
         loader: 'url?limit=10000&mimetype=image/svg+xml&name=/public/webpack-assets/svg'
       }
     ]
+  },
+  // this is only needed for tests (enzyme)
+  // rewrite webpack object in karma.conf.js
+  externals: {
+    'cheerio': 'window',
+    'react/addons': true,
+    'react/lib/ExecutionEnvironment': true,
+    'react/lib/ReactContext': true
   },
   postcss: [
     /* autoprefix for different browser vendors */
